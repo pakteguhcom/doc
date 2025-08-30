@@ -89,45 +89,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('align-right-btn').addEventListener('click', () => formatText('justifyRight'));
     
     // =======================================================
-    // FUNGSI EKSPOR PDF - BAGIAN PALING PENTING
-    // =======================================================
-    exportPdfBtn.addEventListener('click', () => {
-        const { jsPDF } = window.jspdf;
-        
-        const pdf = new jsPDF({
-            orientation: appState.orientation,
-            unit: 'pt',
-            format: 'a4',
-            putOnlyUsedFonts: true,
-            floatPrecision: 16
-        });
-
-        // Menggunakan metode .html() yang lebih akurat
-        pdf.html(viewer, {
-            callback: function (pdf) {
-                pdf.save('document.pdf');
-            },
-            margin: [40, 40, 40, 40], // Atas, Kanan, Bawah, Kiri
-            autoPaging: 'text',
-            // Lebar area konten di A4 (lebar total - margin kiri & kanan)
-            width: 595 - 80, 
-            windowWidth: viewer.scrollWidth,
-        });
-    });
+// FUNGSI EKSPOR PDF - VERSI PERBAIKAN DENGAN DOM-TO-IMAGE
+// =======================================================
+exportPdfBtn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
     
-    exportImgBtn.addEventListener('click', () => {
-        html2canvas(viewer, { scale: 2 }).then(canvas => {
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = 'document.png';
-            link.click();
-        });
-    });
+    // Opsi untuk domtoimage, meningkatkan kualitas
+    const options = {
+        quality: 0.98,
+        height: viewer.scrollHeight, // Ambil seluruh tinggi konten
+        width: viewer.scrollWidth,
+        style: {
+            'transform': 'scale(1)', // Reset zoom sementara untuk hasil terbaik
+            'margin': '0'
+        }
+    };
 
-    printBtn.addEventListener('click', () => {
-        window.print();
-    });
-    
+    // Gunakan domtoimage untuk mengonversi div menjadi gambar PNG
+    domtoimage.toPng(viewer, options)
+        .then(function (dataUrl) {
+            // dataUrl adalah gambar dalam format base64
+            const pdf = new jsPDF({
+                orientation: appState.orientation,
+                unit: 'px', // Gunakan pixel agar lebih sesuai dengan gambar
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            // Tambahkan gambar ke PDF, sesuaikan dengan ukuran halaman
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save("document.pdf");
+        })
+        .catch(function (error) {
+            console.error('oops, something went wrong!', error);
+        });
+});    
     // =================================================
     // 4. INISIALISASI
     // =================================================
