@@ -69,14 +69,13 @@ body {
 #viewer {
     background-color: var(--page-bg);
     box-shadow: 0 0 10px var(--shadow-color);
-    padding: 2.54cm; /* Margin 1 inch */
+    padding: 2.54cm;
     outline: none;
     transition: transform 0.3s ease-in-out;
-    font-family: 'Arial', sans-serif; /* Atur font default agar konsisten */
+    font-family: 'Arial', sans-serif;
     line-height: 1.5;
 }
 
-/* Kelas untuk Orientasi Halaman (rasio A4) */
 .portrait {
     width: 21cm;
     min-height: 29.7cm;
@@ -87,27 +86,21 @@ body {
     min-height: 21cm;
 }
 
-/* ======================================================= */
-/* ATURAN CETAK (PRINT) - VERSI FINAL YANG LEBIH KUAT */
-/* ======================================================= */
 @media print {
-    /* Pertama, sembunyikan SEMUANYA */
     body * {
         visibility: hidden;
     }
 
-    /* Kedua, tampilkan HANYA viewer dan semua elemen di dalamnya */
     #viewer, #viewer * {
         visibility: visible;
     }
 
-    /* Ketiga, ambil alih posisi viewer dan letakkan di pojok kiri atas halaman */
     #viewer {
         position: absolute;
         left: 0;
         top: 0;
         margin: 0;
-        padding: 1cm; /* Beri sedikit margin cetak */
+        padding: 1cm;
         width: 100%;
         height: auto;
         box-shadow: none;
@@ -115,7 +108,6 @@ body {
         transform: none !important;
     }
     
-    /* Pastikan tidak ada elemen lain yang mengganggu */
     #toolbar, #viewer-container {
         display: none;
     }
