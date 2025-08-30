@@ -86,18 +86,29 @@ body {
 }
 
 /* Aturan untuk mencetak */
+/* Aturan untuk mencetak */
 @media print {
+    /* Sembunyikan semua elemen di body KECUALI container viewer */
+    body > *:not(#viewer-container) {
+        display: none;
+    }
+
+    /* Pastikan viewer dan containernya terlihat dan memenuhi area cetak */
+    #viewer-container, #viewer {
+        display: block !important; /* Pastikan terlihat */
+        visibility: visible !important; /* Pastikan terlihat */
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important; /* Hilangkan bayangan */
+        transform: scale(1) !important; /* Reset zoom */
+    }
+    
+    /* Atur agar background aplikasi tidak mengganggu */
     body {
-        background-color: #fff; /* Hilangkan background abu-abu */
-    }
-    #toolbar, #viewer-container {
-        display: none; /* Sembunyikan semua UI kecuali viewer */
-    }
-    #viewer {
-        box-shadow: none; /* Hilangkan bayangan saat cetak */
+        background-color: #fff !important;
         margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
     }
+}
 }
