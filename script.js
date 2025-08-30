@@ -1,17 +1,14 @@
-// Tunggu hingga seluruh halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     
     // =================================================
     // 1. MANAJEMEN STATE DAN SELEKSI DOM
     // =================================================
 
-    // Objek untuk menyimpan state aplikasi
     const appState = {
-        orientation: 'portrait', // 'portrait' atau 'landscape'
-        zoomLevel: 1.0, // 1.0 = 100%
+        orientation: 'portrait',
+        zoomLevel: 1.0,
     };
 
-    // Seleksi semua elemen interaktif dari DOM
     const fileUpload = document.getElementById('file-upload');
     const viewer = document.getElementById('viewer');
     const orientationBtn = document.getElementById('orientation-btn');
@@ -25,45 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. FUNGSI UTAMA (RENDER DAN LOGIKA)
     // =================================================
 
-    /**
-     * Fungsi ini membaca appState dan memperbarui DOM.
-     * Dipanggil setiap kali ada perubahan state.
-     */
     function updateUI() {
-        // 1. Update Orientasi
         viewer.classList.remove('portrait', 'landscape');
         viewer.classList.add(appState.orientation);
-
-        // 2. Update Zoom
         viewer.style.transform = `scale(${appState.zoomLevel})`;
     }
 
-    /**
-     * Menangani file yang di-upload pengguna.
-     * @param {Event} event 
-     */
     function handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
 
-        // Jika file adalah .docx
         if (file.name.endsWith('.docx')) {
             reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
-                mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                mammoth.convertToHtml({ arrayBuffer: e.target.result })
                     .then(result => {
                         viewer.innerHTML = result.value;
                     })
                     .catch(err => console.error("Error processing .docx file:", err));
             };
             reader.readAsArrayBuffer(file);
-        } 
-        // Jika file adalah .txt
-        else if (file.name.endsWith('.txt')) {
+        } else if (file.name.endsWith('.txt')) {
             reader.onload = function(e) {
-                // Tampilkan teks dengan mempertahankan baris baru
                 const text = e.target.result;
                 viewer.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
             };
@@ -71,31 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    /**
-     * Fungsi untuk menerapkan format teks sederhana
-     * @param {string} command - Perintah seperti 'bold', 'italic'
-     */
     function formatText(command, value = null) {
         document.execCommand(command, false, value);
     }
     
-
     // =================================================
     // 3. EVENT LISTENERS
     // =================================================
 
-    // Listener untuk upload file
     fileUpload.addEventListener('change', handleFileUpload);
 
-    // Listener untuk tombol orientasi
     orientationBtn.addEventListener('click', () => {
-        // Ubah state
         appState.orientation = appState.orientation === 'portrait' ? 'landscape' : 'portrait';
-        // Panggil render
         updateUI();
     });
 
-    // Listeners untuk Zoom
     zoomInBtn.addEventListener('click', () => {
         appState.zoomLevel += 0.1;
         updateUI();
@@ -108,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Listeners untuk Toolbar Editor
     document.getElementById('bold-btn').addEventListener('click', () => formatText('bold'));
     document.getElementById('italic-btn').addEventListener('click', () => formatText('italic'));
     document.getElementById('underline-btn').addEventListener('click', () => formatText('underline'));
@@ -118,30 +88,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('align-center-btn').addEventListener('click', () => formatText('justifyCenter'));
     document.getElementById('align-right-btn').addEventListener('click', () => formatText('justifyRight'));
     
-    // Listener untuk Ekspor ke PDF
+    // =======================================================
+    // FUNGSI EKSPOR PDF - BAGIAN PALING PENTING
+    // =======================================================
     exportPdfBtn.addEventListener('click', () => {
-        // Menggunakan library jsPDF dan html2canvas
         const { jsPDF } = window.jspdf;
         
-        // Atur orientasi PDF sesuai state
         const pdf = new jsPDF({
             orientation: appState.orientation,
-            unit: 'pt', // Menggunakan points agar lebih presisi
-            format: 'a4'
+            unit: 'pt',
+            format: 'a4',
+            putOnlyUsedFonts: true,
+            floatPrecision: 16
         });
-        
-        // Gunakan html2canvas untuk 'menggambar' div viewer ke canvas
-        html2canvas(viewer, { scale: 2 }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save("document.pdf");
+
+        // Menggunakan metode .html() yang lebih akurat
+        pdf.html(viewer, {
+            callback: function (pdf) {
+                pdf.save('document.pdf');
+            },
+            margin: [40, 40, 40, 40], // Atas, Kanan, Bawah, Kiri
+            autoPaging: 'text',
+            // Lebar area konten di A4 (lebar total - margin kiri & kanan)
+            width: 595 - 80, 
+            windowWidth: viewer.scrollWidth,
         });
     });
     
-    // Listener untuk Ekspor ke Gambar
     exportImgBtn.addEventListener('click', () => {
         html2canvas(viewer, { scale: 2 }).then(canvas => {
             const link = document.createElement('a');
@@ -151,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Listener untuk Cetak
     printBtn.addEventListener('click', () => {
         window.print();
     });
@@ -160,6 +132,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. INISIALISASI
     // =================================================
 
-    // Panggil updateUI saat aplikasi pertama kali dimuat
     updateUI();
 });
