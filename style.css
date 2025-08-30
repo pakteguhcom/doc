@@ -71,7 +71,9 @@ body {
     box-shadow: 0 0 10px var(--shadow-color);
     padding: 2.54cm; /* Margin 1 inch */
     outline: none;
-    transition: all 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out;
+    font-family: 'Arial', sans-serif; /* Atur font default agar konsisten */
+    line-height: 1.5;
 }
 
 /* Kelas untuk Orientasi Halaman (rasio A4) */
@@ -85,8 +87,9 @@ body {
     min-height: 21cm;
 }
 
-/* Aturan untuk mencetak */
-/* Aturan untuk mencetak */
+/* ======================================================= */
+/* ATURAN CETAK (PRINT) - BAGIAN PALING PENTING */
+/* ======================================================= */
 @media print {
     /* Sembunyikan semua elemen di body KECUALI container viewer */
     body > *:not(#viewer-container) {
@@ -95,20 +98,22 @@ body {
 
     /* Pastikan viewer dan containernya terlihat dan memenuhi area cetak */
     #viewer-container, #viewer {
-        display: block !important; /* Pastikan terlihat */
-        visibility: visible !important; /* Pastikan terlihat */
+        display: block !important;
+        visibility: visible !important;
         width: 100% !important;
         height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
-        box-shadow: none !important; /* Hilangkan bayangan */
-        transform: scale(1) !important; /* Reset zoom */
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important; /* Pastikan konten tidak terpotong */
+        
+        /* KUNCI UTAMA: Reset properti transform saat mencetak! */
+        transform: none !important;
     }
     
-    /* Atur agar background aplikasi tidak mengganggu */
     body {
         background-color: #fff !important;
         margin: 0;
     }
-}
 }
