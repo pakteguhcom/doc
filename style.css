@@ -88,32 +88,35 @@ body {
 }
 
 /* ======================================================= */
-/* ATURAN CETAK (PRINT) - BAGIAN PALING PENTING */
+/* ATURAN CETAK (PRINT) - VERSI FINAL YANG LEBIH KUAT */
 /* ======================================================= */
 @media print {
-    /* Sembunyikan semua elemen di body KECUALI container viewer */
-    body > *:not(#viewer-container) {
-        display: none;
+    /* Pertama, sembunyikan SEMUANYA */
+    body * {
+        visibility: hidden;
     }
 
-    /* Pastikan viewer dan containernya terlihat dan memenuhi area cetak */
-    #viewer-container, #viewer {
-        display: block !important;
-        visibility: visible !important;
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-        overflow: visible !important; /* Pastikan konten tidak terpotong */
-        
-        /* KUNCI UTAMA: Reset properti transform saat mencetak! */
+    /* Kedua, tampilkan HANYA viewer dan semua elemen di dalamnya */
+    #viewer, #viewer * {
+        visibility: visible;
+    }
+
+    /* Ketiga, ambil alih posisi viewer dan letakkan di pojok kiri atas halaman */
+    #viewer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        padding: 1cm; /* Beri sedikit margin cetak */
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+        border: none;
         transform: none !important;
     }
     
-    body {
-        background-color: #fff !important;
-        margin: 0;
+    /* Pastikan tidak ada elemen lain yang mengganggu */
+    #toolbar, #viewer-container {
+        display: none;
     }
 }
