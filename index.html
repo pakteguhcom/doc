@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Pembelajaran Interaktif</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        #quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+        }
+        #quiz-header {
+            padding: 20px 25px;
+            background-color: #4a90e2;
+            color: white;
+        }
+        #quiz-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+         #question-counter {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        #question-area {
+            padding: 25px;
+        }
+        #question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .option {
+            background-color: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option:hover {
+            background-color: #e9e9e9;
+        }
+        .option.selected {
+            border-color: #4a90e2;
+            background-color: #e7f3ff;
+        }
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            font-weight: bold;
+        }
+        .option.wrong {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            font-weight: bold;
+        }
+        #explanation-area {
+            padding: 0 25px 25px 25px;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            background-color: #fafafa;
+            display: none;
+        }
+         #explanation-area h4 {
+            margin-top: 20px;
+            color: #333;
+        }
+        #explanation-text {
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        #controls {
+            padding: 20px 25px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #357abd;
+        }
+        #score-container {
+            padding: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <div id="quiz-header">
+            <h2 id="quiz-title">Kuis: Prinsip Pembelajaran</h2>
+            <p id="question-counter"></p>
+        </div>
+
+        <div id="question-area">
+            <p id="question-text"></p>
+            <ul class="options-list" id="options">
+            </ul>
+        </div>
+
+        <div id="explanation-area">
+            <h4>Pembahasan</h4>
+            <p id="explanation-text"></p>
+        </div>
+
+        <div id="controls">
+            <button id="submit-btn">Pilih Jawaban</button>
+            <button id="next-btn" style="display:none;">Selanjutnya</button>
+        </div>
+        
+        <div id="score-container" style="display:none;">
+             <h2>Kuis Selesai!</h2>
+             <p>Skor Anda:</p>
+             <p id="final-score" style="font-size: 2.5em; font-weight: bold; margin: 10px 0;"></p>
+             <button id="restart-btn">Ulangi Kuis</button>
+        </div>
+    </div>
+
+<script>
+const quizData = [
+    {
+        question: "Prinsip Pola Pikir Bertumbuh paling banyak berperan dalam Pengalaman Belajar khususnya pada tahap:",
+        options: ["Memahami", "Mengaplikasi", "Ketiganya", "Merefleksi"],
+        answer: "Ketiganya",
+        explanation: "Pola pikir bertumbuh (growth mindset) berperan penting di semua tahapan belajar: saat memahami konsep baru, saat mencoba mengaplikasikannya (terutama ketika menghadapi kesulitan), dan saat merefleksikan proses belajar untuk perbaikan."
+    },
+    {
+        question: "Prof Carol Dweck membagi Mindset menjadi 2 Tipe yaitu Pola Pikir Tetap (PPT) dan Pola Pikir Bertumbuh (PPB). Perbedaan utama dari kedua tipe pola pikir ini adalah terkait dengan...",
+        options: ["Cara menghadapi orang yang bermasalah", "Cara bereaksi pada saat meraih sukses", "Cara bersikap pada saat berhadapan dengan tantangan dan kesulitan", "Cara berperan pada saat bekerjasama dengan orang lain"],
+        answer: "Cara bersikap pada saat berhadapan dengan tantangan dan kesulitan",
+        explanation: "Perbedaan inti antara pola pikir tetap dan bertumbuh adalah cara memandang tantangan. Pola pikir bertumbuh melihat tantangan sebagai kesempatan untuk belajar, sedangkan pola pikir tetap cenderung menghindarinya karena takut gagal."
+    },
+    {
+        question: "Agar guru bisa menjalankan peran barunya sebagai activator, collaborator dan builder learning culture, kemampuan untuk mendorong orang berubah dari Pola Pikir Tetap menjadi Pola Pikir Bertumbuh dengan cara:",
+        options: ["Mempelajari cara mengenal suara PPT", "Menyadari bahwa kita punya pilihan", "Mengubah Suara PPT menjadi Suara PPB", "Ketiganya"],
+        answer: "Ketiganya",
+        explanation: "Untuk mengubah pola pikir, seseorang perlu melalui tiga tahap: 1) Mengenali suara pola pikir tetap (PPT), 2) Menyadari bahwa ada pilihan untuk merespons secara berbeda, dan 3) Secara aktif mengubah dialog internal dari PPT menjadi Pola Pikir Bertumbuh (PPB)."
+    },
+    {
+        question: "Pembelajaran Mendalam dilaksanakan dengan Prinsip Pembelajaran BBM yaitu Berkesadaran, Bermakna dan Menggembirakan. Prinsip Pola Pikir Bertumbuh akan berperan besar pada prinsip?",
+        options: ["Berkesadaran", "Ketiganya", "Bermakna", "Menggembirakan"],
+        answer: "Ketiganya",
+        explanation: "Pola pikir bertumbuh mendukung ketiga prinsip. Dengan mindset ini, siswa lebih sadar (berkesadaran) akan proses belajarnya, menemukan makna (bermakna) dalam tantangan, dan merasa lebih senang (menggembirakan) dalam belajar karena tidak takut gagal."
+    },
+    {
+        question: "Mengapa Pola Pikir disebut adalah 'segalanya'?",
+        options: ["Pola Pikir mendikti apa yang akan dilakukan", "Pola Pikir fondasi dari ketrampilan dan peralatan", "Pola Pikir menentukan hasil yang diperoleh", "Ketiganya benar"],
+        answer: "Ketiganya benar",
+        explanation: "Pola pikir (mindset) adalah fondasi yang memengaruhi tindakan kita, cara kita mengembangkan keterampilan, dan pada akhirnya hasil yang kita capai. Oleh karena itu, ketiga pernyataan tersebut benar."
+    },
+    {
+        question: "Berikut ini merupakan karateristik pengalaman belajar mengaplikasikan adalah ....",
+        options: ["Berpikir kritis dan mencari solusi inovatif berdasarkan pengetahuan yang ada", "Membuat ringkasan materi yang dipahami untuk menguji pemahaman mereka sendiri", "Meregulasi diri dan emosi dalam pembelajaran", "Menghubungkan dengan konteks nyata atau kehidupan sehari-hari"],
+        answer: "Berpikir kritis dan mencari solusi inovatif berdasarkan pengetahuan yang ada",
+        explanation: "Tahap mengaplikasikan melibatkan penggunaan pengetahuan yang telah dipahami untuk memecahkan masalah. Ini sering kali membutuhkan pemikiran kritis dan pencarian solusi yang inovatif, bukan sekadar menghubungkan ke konteks."
+    },
+    {
+        question: "Pengalaman belajar pada pendekatan pembelajaran mendalam memiliki tiga proses tahapan yang terus berulang seperti siklus ketiga proses tersebut adalah ....",
+        options: ["Memahami, mengaplikasikan dan merefleksikan", "Perencanaan, pelaksanaan dan penilaian", "Unistruktural, multistruktural dan relasional", "Memahami, menganalisis dan mencipta"],
+        answer: "Memahami, mengaplikasikan dan merefleksikan",
+        explanation: "Siklus pembelajaran mendalam yang efektif selalu melibatkan tiga tahap berulang: pertama, memahami informasi baru; kedua, mengaplikasikan pemahaman itu; dan ketiga, merefleksikan hasilnya untuk memperdalam pemahaman."
+    },
+    {
+        question: "Berikut ini merupakan penerapan dari prinsip berkesadaran dalam pendekatan pembelajaran mendalam adalah .....",
+        options: ["Kebermanfaatan pengalaman untuk diterapkan dalam konteks baru", "Tantangan yang memotivasi", "Keingintahuan terhadap pengetahuan dan pengalaman baru", "Kontekstual dan relevan dengan kehidupan nyata"],
+        answer: "Kontekstual dan relevan dengan kehidupan nyata",
+        explanation: "Prinsip berkesadaran (mindfulness) dalam belajar diwujudkan dengan membuat materi pembelajaran menjadi relevan dan terhubung dengan dunia nyata siswa. Ini membantu siswa menyadari kegunaan dari apa yang mereka pelajari."
+    },
+    {
+        question: "Dalam pembelajaran mendalam terdapat 3 prinsip pembelajaran yang menjadi ciri khas pada pendekatan tersebut, ketiga prinsip itu adalah...",
+        options: ["Memahami, mengaplikasikan dan menggembirakan", "Berpusat pada peserta didik, kontekstual dan bermakna", "Berkesadaran, bermakna dan menggembirakan", "Memuliakan, menyenangkan dan berkesadaran"],
+        answer: "Berkesadaran, bermakna dan menggembirakan",
+        explanation: "Tiga prinsip utama yang sering dirujuk dalam model Pembelajaran Mendalam (terkadang disingkat BBM) adalah Berkesadaran, Bermakna, dan Menggembirakan."
+    },
+    {
+        question: "Pembelajaran yang menciptakan suasana belajar yang positif, menantang, menyenangkan, dan memotivasi. Hal ini merupakan prinsip pembelajaran....",
+        options: ["Berkesadaran", "Bermakna", "Berkeadilan", "Menggembirakan"],
+        answer: "Menggembirakan",
+        explanation: "Deskripsi dalam soal—positif, menyenangkan, memotivasi, dan menumbuhkan motivasi intrinsik—secara langsung mendefinisikan prinsip pembelajaran yang Menggembirakan (joyful learning)."
+    },
+    {
+        question: "Tujuan utama dari asesmen sumatif yaitu ...",
+        options: ["Menyimpulkan hasil belajar peserta didik", "Membantu guru didik dalam mengikuti pembelajaran", "Membantu guru memberikan umpan balik pembelajaran oleh peserta didik", "Memberi kesempatan peserta didik memperbaiki capaian pembelajarannya"],
+        answer: "Menyimpulkan hasil belajar peserta didik",
+        explanation: "Asesmen sumatif (assessment of learning) dilakukan di akhir periode pembelajaran (misalnya, ujian akhir semester) untuk mengukur dan menyimpulkan pencapaian belajar siswa terhadap tujuan yang telah ditetapkan."
+    },
+    {
+        question: "Bapak Rian menggunakan hasil asesmen untuk menilai efektivitas pembelajaran dan membantu peningkatan capaian siswa. Apa yang dilakukan oleh Bapak Rian sejalan dengan prinsip asesmen yaitu ...",
+        options: ["Berkeadilan", "Transparan", "Sahih", "Edukatif"],
+        answer: "Edukatif",
+        explanation: "Prinsip asesmen yang edukatif berarti hasil asesmen digunakan sebagai alat untuk meningkatkan kualitas belajar siswa dan kualitas mengajar guru, bukan hanya sebagai alat untuk menghakimi."
+    },
+    {
+        question: "Arjuna melakukan asesmen untuk perbaikan proses pembelajaran, baik sebagai umpan balik untuk peserta didik maupun refleksi bagi guru. Ini sejalan dengan prinsip asesmen ...",
+        options: ["Assessment as Learning", "Assessment by Learning", "Assessment for Learning", "Assessment of Learning"],
+        answer: "Assessment for Learning",
+        explanation: "Assessment for Learning (Asesmen untuk Pembelajaran) adalah asesmen formatif yang tujuannya adalah untuk memberikan umpan balik guna memperbaiki proses pembelajaran yang sedang berlangsung."
+    },
+    {
+        question: "Asesmen formatif berupa tes diagnostik dilakukan oleh guru dengan tujuan ...",
+        options: ["Mengetahui perkembangan peserta didik", "Melihat kesiapan belajar peserta didik", "Memberikan umpan balik kepada peserta didik", "Mengukur karakteristik belajar peserta didik"],
+        answer: "Melihat kesiapan belajar peserta didik",
+        explanation: "Tes diagnostik dilakukan di awal pembelajaran untuk mengidentifikasi pengetahuan awal, kekuatan, kelemahan, dan kesiapan siswa dalam mempelajari materi baru."
+    },
+    {
+        question: "Asesmen yang dilakukan guru secara informal seperti pertanyaan di kelas, pengamatan, dan PR merupakan ciri dari asesmen ...",
+        options: ["Sumatif", "Portofolio", "Diagnostik", "Formatif"],
+        answer: "Formatif",
+        explanation: "Asesmen formatif adalah proses berkelanjutan yang dilakukan selama pembelajaran. Contohnya termasuk observasi, tanya jawab, dan kuis informal untuk memantau pemahaman siswa."
+    },
+    {
+        question: "Manakah yang bukan termasuk langkah dalam inkuiri kolaboratif?",
+        options: ["Menghafalkan teori tanpa diskusi", "Menerapkan strategi yang telah dirancang", "Mengidentifikasi tantangan pembelajaran", "Menganalisis hasil dan merefleksi pembelajaran"],
+        answer: "Menghafalkan teori tanpa diskusi",
+        explanation: "Inkuiri kolaboratif adalah tentang eksplorasi, diskusi, dan penemuan. Menghafal tanpa diskusi adalah kebalikan dari semangat inkuiri yang aktif dan kritis."
+    },
+    {
+        question: "Apa manfaat utama dari pendekatan inkuiri kolaboratif?",
+        options: ["Mengembangkan keterampilan berpikir kritis dan reflektif", "Hanya meningkatkan nilai akademik tanpa dampak lain", "Mempermudah guru dalam memberikan nilai", "Membuat siswa bergantung pada teman sekelompoknya"],
+        answer: "Mengembangkan keterampilan berpikir kritis dan reflektif",
+        explanation: "Manfaat terbesar dari inkuiri kolaboratif adalah melatih siswa untuk bertanya, menyelidiki, menganalisis, dan merefleksikan temuan mereka, yang semuanya merupakan komponen dari berpikir kritis."
+    },
+    {
+        question: "Apa yang dimaksud dengan inkuiri kolaboratif?",
+        options: ["Cara guru mengajar tanpa melibatkan siswa", "Upaya kolektif dalam mengeksplorasi dan memecahkan permasalahan pembelajaran", "Proses individu dalam menemukan jawaban atas suatu masalah", "Sekadar berdiskusi dengan teman tanpa tujuan jelas"],
+        answer: "Upaya kolektif dalam mengeksplorasi dan memecahkan permasalahan pembelajaran",
+        explanation: "'Inkuiri' berarti penyelidikan, dan 'kolaboratif' berarti kerja sama. Jadi, inkuiri kolaboratif adalah upaya bersama (kolektif) untuk menyelidiki dan menyelesaikan suatu masalah."
+    },
+    {
+        question: "Dalam proyek inkuiri kolaboratif tentang lingkungan, siapa yang paling tepat diajak kerja sama untuk memberikan wawasan tambahan?",
+        options: ["Tidak perlu bekerja sama dengan siapa pun", "Ahli lingkungan, komunitas peduli lingkungan, dan dinas terkait", "Hanya teman sekelas tanpa mencari perspektif lain", "Orang yang tidak memiliki pengalaman dalam isu lingkungan"],
+        answer: "Ahli lingkungan, komunitas peduli lingkungan, dan dinas terkait",
+        explanation: "Untuk mendapatkan pemahaman yang kaya dan otentik, penting untuk melibatkan sumber dari dunia nyata, seperti para ahli dan komunitas yang relevan dengan topik yang diselidiki."
+    },
+    {
+        question: "Bagaimana cara terbaik untuk mengidentifikasi tantangan pembelajaran dalam inkuiri kolaboratif?",
+        options: ["Guru memutuskan sendiri tanpa diskusi", "Menggunakan data asesmen dan umpan balik siswa", "Menunggu hingga siswa menyadari kesulitannya sendiri", "Mengikuti metode yang sudah ada tanpa adaptasi"],
+        answer: "Menggunakan data asesmen dan umpan balik siswa",
+        explanation: "Cara yang paling efektif dan objektif untuk mengidentifikasi tantangan adalah dengan menganalisis data dari asesmen (formatif) dan mendengarkan umpan balik langsung dari siswa."
+    },
+    {
+        question: "Dalam pembelajaran mendalam, peran guru yang paling tepat adalah...",
+        options: ["Sebagai pemberi tugas yang harus diselesaikan dengan cepat", "Sebagai pengawas yang memastikan siswa tidak melakukan kesalahan", "Sebagai fasilitator yang membimbing siswa untuk mengeksplorasi dan memahami konsep lebih dalam", "Sebagai satu-satunya penilai hasil pembelajaran siswa tanpa memberi kesempatan refleksi"],
+        answer: "Sebagai fasilitator yang membimbing siswa untuk mengeksplorasi dan memahami konsep lebih dalam",
+        explanation: "Dalam pendekatan modern, peran guru bergeser dari 'sumber segala ilmu' menjadi 'fasilitator' yang memandu, bertanya, dan mendorong siswa untuk menemukan pemahaman mereka sendiri."
+    },
+    {
+        question: "Refleksi pembelajaran dalam mendalam (deep learning) bertujuan untuk:",
+        options: ["Menganalisis dan memahami proses belajar secara mendalam", "Meniru kode yang sudah ada tanpa memahami maknanya", "Menyelesaikan soal sebanyak mungkin dalam waktu singkat", "Menghafal semua istilah teknis dengan cepat"],
+        answer: "Menganalisis dan memahami proses belajar secara mendalam",
+        explanation: "Tujuan refleksi adalah untuk berpikir kembali tentang proses belajar (metakognisi): Apa yang sudah saya pelajari? Bagaimana saya mempelajarinya? Apa yang masih sulit? Ini membantu memperkuat dan memperdalam pemahaman."
+    },
+    {
+        question: "Salah satu strategi yang dapat diterapkan guru untuk mendorong pembelajaran mendalam adalah...",
+        options: ["Menggunakan pertanyaan reflektif yang menantang pemikiran siswa", "Menghindari diskusi kelompok agar siswa fokus belajar sendiri", "Mengutamakan hafalan tanpa eksplorasi konsep lebih lanjut", "Memberikan tugas yang sama kepada semua siswa tanpa mempertimbangkan tingkat pemahaman mereka"],
+        answer: "Menggunakan pertanyaan reflektif yang menantang pemikiran siswa",
+        explanation: "Pertanyaan yang baik (terutama pertanyaan terbuka dan reflektif) adalah alat yang sangat kuat untuk memicu pemikiran mendalam, mendorong siswa untuk membuat koneksi dan menganalisis, bukan hanya mengingat."
+    },
+    {
+        question: "Bagaimana seorang guru dapat menilai apakah siswa telah mencapai pembelajaran mendalam?",
+        options: ["Dengan melihat jumlah materi yang telah dihafalkan oleh siswa", "Dengan mengamati sejauh mana siswa dapat menghubungkan konsep dengan pengalaman nyata", "Dengan memberikan kuis yang hanya mengukur ingatan jangka pendek", "Dengan menilai seberapa cepat siswa menyelesaikan soal tanpa kesalahan"],
+        answer: "Dengan mengamati sejauh mana siswa dapat menghubungkan konsep dengan pengalaman nyata",
+        explanation: "Bukti sejati dari pembelajaran mendalam bukanlah hafalan, melainkan kemampuan siswa untuk mentransfer dan menerapkan konsep dalam situasi baru, terutama dalam konteks kehidupan nyata mereka."
+    },
+    {
+        question: "Refleksi dalam pembelajaran mendalam memiliki tujuan utama untuk...",
+        options: ["Memberi siswa kesempatan untuk menyalin catatan teman", "Membantu siswa dan guru memahami proses belajar serta meningkatkan strategi pembelajaran", "Mengulang kembali materi tanpa analisis lebih lanjut", "Menilai seberapa cepat siswa menyelesaikan tugas"],
+        answer: "Membantu siswa dan guru memahami proses belajar serta meningkatkan strategi pembelajaran",
+        explanation: "Refleksi bermanfaat bagi kedua belah pihak. Siswa menjadi pembelajar yang lebih baik, dan guru mendapatkan wawasan berharga untuk memperbaiki strategi mengajarnya di masa depan."
+    },
+    {
+        question: "Salah satu hambatan dalam menerapkan inkuiri kolaboratif adalah keterbatasan waktu untuk refleksi guru. Solusi terbaik untuk mengatasi hal ini adalah...",
+        options: ["Meminta siswa bekerja sendiri tanpa umpan balik", "Menghindari refleksi karena memakan waktu", "Menjadwalkan pertemuan refleksi secara rutin meskipun singkat", "Mengurangi diskusi agar lebih efisien"],
+        answer: "Menjadwalkan pertemuan refleksi secara rutin meskipun singkat",
+        explanation: "Solusi untuk kurangnya waktu bukanlah menghilangkan aktivitas penting, tetapi mengintegrasikannya secara efisien. Refleksi singkat yang rutin jauh lebih baik daripada tidak ada refleksi sama sekali."
+    },
+     {
+        question: "Dalam proyek inkuiri kolaboratif tentang lingkungan, siapa yang paling tepat diajak kerja sama untuk memberikan wawasan tambahan?",
+        options: ["Hanya teman sekelas tanpa mencari perspektif lain", "Tidak perlu bekerja sama dengan siapa pun", "Ahli lingkungan, komunitas peduli lingkungan, dan dinas terkait", "Orang yang tidak memiliki pengalaman dalam isu lingkungan"],
+        answer: "Ahli lingkungan, komunitas peduli lingkungan, dan dinas terkait",
+        explanation: "Untuk mendapatkan pemahaman yang kaya dan otentik, penting untuk melibatkan sumber dari dunia nyata, seperti para ahli dan komunitas yang relevan dengan topik yang diselidiki."
+    },
+    {
+        question: "Bagaimana cara terbaik untuk mengidentifikasi tantangan pembelajaran dalam inkuiri kolaboratif?",
+        options: ["Menunggu hingga siswa menyadari kesulitannya sendiri", "Guru memutuskan sendiri tanpa diskusi", "Menggunakan data asesmen dan umpan balik siswa", "Mengikuti metode yang sudah ada tanpa adaptasi"],
+        answer: "Menggunakan data asesmen dan umpan balik siswa",
+        explanation: "Cara yang paling efektif dan objektif untuk mengidentifikasi tantangan adalah dengan menganalisis data dari asesmen (formatif) dan mendengarkan umpan balik langsung dari siswa."
+    },
+    {
+        question: "Apa manfaat utama dari pendekatan inkuiri kolaboratif?",
+        options: ["Hanya meningkatkan nilai akademik tanpa dampak lain", "Mempermudah guru dalam memberikan nilai", "Membuat siswa bergantung pada teman sekelompoknya", "Mengembangkan keterampilan berpikir kritis dan reflektif"],
+        answer: "Mengembangkan keterampilan berpikir kritis dan reflektif",
+        explanation: "Manfaat terbesar dari inkuiri kolaboratif adalah melatih siswa untuk bertanya, menyelidiki, menganalisis, dan merefleksikan temuan mereka, yang semuanya merupakan komponen dari berpikir kritis."
+    },
+    {
+        question: "Manakah yang bukan termasuk langkah dalam inkuiri kolaboratif?",
+        options: ["Menghafalkan teori tanpa diskusi", "Mengidentifikasi tantangan pembelajaran", "Menganalisis hasil dan merefleksi pembelajaran", "Menerapkan strategi yang telah dirancang"],
+        answer: "Menghafalkan teori tanpa diskusi",
+        explanation: "Inkuiri kolaboratif adalah tentang eksplorasi, diskusi, dan penemuan. Menghafal tanpa diskusi adalah kebalikan dari semangat inkuiri yang aktif dan kritis."
+    }
+];
+
+// Elemen DOM
+const questionCounter = document.getElementById('question-counter');
+const questionText = document.getElementById('question-text');
+const optionsList = document.getElementById('options');
+const submitBtn = document.getElementById('submit-btn');
+const nextBtn = document.getElementById('next-btn');
+const explanationArea = document.getElementById('explanation-area');
+const explanationText = document.getElementById('explanation-text');
+const quizContainer = document.getElementById('quiz-container');
+const scoreContainer = document.getElementById('score-container');
+const finalScore = document.getElementById('final-score');
+const restartBtn = document.getElementById('restart-btn');
+
+
+let currentQuestionIndex = 0;
+let score = 0;
+let selectedOption = null;
+
+function loadQuestion() {
+    // Reset
+    selectedOption = null;
+    explanationArea.style.display = 'none';
+    optionsList.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.style.display = 'inline-block';
+    nextBtn.style.display = 'none';
+    
+    const question = quizData[currentQuestionIndex];
+    questionCounter.textContent = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+    questionText.textContent = question.question;
+
+    question.options.forEach(optionText => {
+        const li = document.createElement('li');
+        li.textContent = optionText;
+        li.classList.add('option');
+        li.addEventListener('click', () => {
+            if (submitBtn.style.display === 'none') return; // Jangan biarkan memilih setelah submit
+            
+            // Hapus seleksi sebelumnya
+            const currentlySelected = document.querySelector('.option.selected');
+            if (currentlySelected) {
+                currentlySelected.classList.remove('selected');
+            }
+            
+            // Pilih yang baru
+            li.classList.add('selected');
+            selectedOption = li;
+            submitBtn.disabled = false;
+        });
+        optionsList.appendChild(li);
+    });
+}
+
+function showResults() {
+    const question = quizData[currentQuestionIndex];
+    explanationText.textContent = question.explanation;
+    explanationArea.style.display = 'block';
+
+    Array.from(optionsList.children).forEach(option => {
+        if (option.textContent === question.answer) {
+            option.classList.add('correct');
+        } else if (option === selectedOption) {
+            option.classList.add('wrong');
+        }
+    });
+
+    if (selectedOption.textContent === question.answer) {
+        score++;
+    }
+    
+    submitBtn.style.display = 'none';
+    nextBtn.style.display = 'inline-block';
+}
+
+function showFinalScore() {
+    document.getElementById('question-area').style.display = 'none';
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('quiz-header').style.textAlign = 'center';
+    
+    scoreContainer.style.display = 'block';
+    const percentage = Math.round((score / quizData.length) * 100);
+    finalScore.textContent = `${percentage}%`;
+    finalScore.style.color = percentage >= 70 ? '#155724' : '#721c24';
+    document.getElementById('quiz-title').textContent = "Hasil Kuis Anda";
+    questionCounter.textContent = `Anda menjawab benar ${score} dari ${quizData.length} soal.`;
+}
+
+submitBtn.addEventListener('click', () => {
+    if (selectedOption) {
+        showResults();
+    }
+});
+
+nextBtn.addEventListener('click', () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < quizData.length) {
+        loadQuestion();
+    } else {
+        showFinalScore();
+    }
+});
+
+restartBtn.addEventListener('click', () => {
+    // Reset state
+    currentQuestionIndex = 0;
+    score = 0;
+
+    // Reset UI
+    scoreContainer.style.display = 'none';
+    document.getElementById('question-area').style.display = 'block';
+    document.getElementById('controls').style.display = 'block';
+    document.getElementById('quiz-header').style.textAlign = 'left';
+    document.getElementById('quiz-title').textContent = "Kuis: Prinsip Pembelajaran";
+    
+    loadQuestion();
+});
+
+
+// Mulai kuis
+loadQuestion();
+
+</script>
+</body>
+</html>
