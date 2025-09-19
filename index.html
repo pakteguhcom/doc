@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOCX Viewer & Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Quill CSS (CDN) -->
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>DOCX Viewer & Editor</h1>
+    <button id="themeToggle" title="Toggle theme">🌙 / ☀️</button>
+  </header>
+
+  <main>
+    <section id="openFile">
+      <h2>Buka Dokumen</h2>
+      <input type="file" id="fileInput" accept=".docx" />
+      <div class="url-row">
+        <input type="text" id="urlInput" placeholder="Tempel URL .docx (butuh CORS yang mengizinkan)" />
+        <button id="loadUrlBtn">Muat dari URL</button>
+      </div>
+      <div id="dropZone">Tarik &amp; lepas file .docx ke sini</div>
+    </section>
+
+    <section id="tabs">
+      <button id="previewTab" class="active">Preview</button>
+      <button id="editTab">Edit</button>
+    </section>
+
+    <section id="viewer">
+      <div id="preview" class="tabContent active"></div>
+      <div id="editor" class="tabContent">
+        <div id="toolbar"></div>
+        <div id="editorContainer"></div>
+      </div>
+    </section>
+
+    <section id="exportButtons">
+      <button id="saveDocx">Export DOCX</button>
+      <button id="savePdf">Export PDF</button>
+      <button id="saveHtml">Export HTML</button>
+      <button id="clearDraft">Clear Draft</button>
+    </section>
+  </main>
+
+  <footer>
+    <p id="status">Ready</p>
+  </footer>
+
+  <!-- Libraries via CDN -->
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <!-- docx UMD build -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+  <script>
+    if (!window.docx) {
+      console.warn('docx UMD tidak terdeteksi. Pastikan URL CDN benar.');
+      alert('Gagal memuat library docx. Coba buka ulang atau perbarui URL CDN di index.html.');
+    }
+  </script>
+
+  <!-- App scripts -->
+  <script src="assets/editor.js"></script>
+  <script src="assets/export.js"></script>
+  <script src="assets/storage.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
